@@ -1,0 +1,106 @@
+
+
+rule all:
+
+
+
+rule bowtie2_build_gencode:
+	input:
+		genome = 'results/hg38.fa.gz'
+	output:
+		dir = 'genome_index_full'
+	params:
+	threads: 16
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		bowtie2-build {input.genome} {output.dir}
+		'''
+
+
+
+rule fastqc:
+	input:
+		fastq = 'samples/{condition}_{rep}.fastq.gz'
+	output:
+		fastqc = 'results/{condition}_{rep}_fastqc.html'
+	params:
+		outdir = 'results/'
+	threads: 4
+	conda:
+		'envs/fastqc_env.yml'
+	shell:
+		'''
+		fastqc {input.fastq} -o {params.outdir}
+		'''
+
+rule trimomatic:
+	input:
+		fastq = 'samples/{condition}_{rep}.fastq.gz',
+		adapters = 'results/TruSeq3-SE.fa'
+	output:
+		trimmed = 'results/{condition}_{rep}_trimmed.fastq.gz'
+	threads: 8
+	conda:
+		'envs/trimmomatic_env.yml'
+	shell:
+		'''
+		trimmomatic SE {input.fastq} {output.trimmed} ILLUMINACLIP:{input.adapters}:2:30:10 LEADING:3 TRAILING:3 SLIDINGWINDOW:4:15
+		'''
+
+rule bowtie2_align:
+	input:
+#		genome = 'genome_index_full',
+		fastq = 'samples/{condition}_{rep}_trimmed.fastq.gz'
+	output:
+		bam = 'results/{condition}_{rep}.bam'
+	threads: 16
+	params:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		bowtie2 -p {threads} -x genome_index_full -U {input.fastq} | samtools view -Sb >{output.bam}
+		'''
+
+rule samtools_sort:
+	input:
+		bam = 'results/{condition}_{rep}.bam'
+	output:
+		sorted = 'results/sorted_{condition}_{rep}.bam'
+	conda:
+		'envs/samtools_env.yml'
+	shell:
+		'''
+		samtools sort {input.bam} -o {output.sorted}
+		'''
+
+rule samtools_idx:
+	input:
+		sorted = 'results/sorted_{condition}_{rep}.bam'
+	output:
+		indexed = 'results/sorted_{condition}_{rep}.bam.bai'
+	conda:
+		'envs/samtools_env.yml'
+	shell:
+		'''
+		samtools index {input.sorted} 
+		'''
+
+rule samtools_flagstat:
+	input:
+		indexed = 'results/sorted_{condition}_{rep}.bam'
+	output:
+		flagstat = 'results/flagstat_{condition}_{rep}.txt'
+	conda:
+		'envs/samtools_env.yml'
+	shell:
+		'''
+		samtools flagstat {input.indexed} > {output.flagstat}
+		'''
+
+# Remove any mitochondrial reads with 
+samtools	view input.bam |	egrep	-v	chrM	| samtools	view	-bT fasta_reference --o output.bam
+
+# 

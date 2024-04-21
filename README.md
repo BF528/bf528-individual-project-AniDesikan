@@ -5,9 +5,7 @@
 Fastq files of two ATAC-seq samples were downloaded. Quality control were performed on these samples by using 
 fastqc version 0.12.1-0, and then the reads were trimmed using trimmomatic version 0.39. Human genome hg38 were downloaded 
 off of Gencode website and an index was built off of it using bowtie2 version 2.5.3. 
-    Trimmed reads were aligned to the human genome index with a maximum fragment length of 2000. These aligned reads were converted to BAM files, and 
-any alignments to the mitochondrial chromosome were removed using samtools version samtools ver 1.19.2. These reads were sorted and counted using samtools
-flagstat. Using bedtools ver 2.31.1, the BAM files were converted to bed format and shifted to account for tagmentation using alignmentSieve from deeptools ver 3.5.4.
+Trimmed reads were aligned to the human genome index with a maximum fragment length of 2000 using bowtie2 align. These aligned reads were converted to BAM files, sorted, indexed, and any alignments to the mitochondrial chromosome were removed using samtools version 1.19.2. Using bedtools ver 2.31.1, the BAM files were converted to bed format and shifted to account for tagmentation using alignmentSieve from deeptools ver 3.5.4.
 QC was performed on these bed files using ATACseqQC in R.
     Peaks will be called on the bed files with default parameters using MACS v3.0.1. Reproducible peaks were obtained with peaks that had 50% of the peaks in common using the 
 bedtools intersect. Peaks that lie in blacklisted areas of the genome will be filtered out using bedtools intersect with the blacklisted genome. Filtered peaks were annotated using the Gencode v45 primary peaks_repr_filtered_annotations. Motifs were found using Homer's findMotifsGenome.pl, with default parameters except for a size of 200.
