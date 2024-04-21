@@ -2,7 +2,7 @@
 
 ## Methods
 
-    Fastq files of two ATAC-seq samples were downloaded. Quality control were performed on these samples by using 
+Fastq files of two ATAC-seq samples were downloaded. Quality control were performed on these samples by using 
 fastqc version 0.12.1-0, and then the reads were trimmed using trimmomatic version 0.39. Human genome hg38 were downloaded 
 off of Gencode website and an index was built off of it using bowtie2 version 2.5.3. 
     Trimmed reads were aligned to the human genome index with a maximum fragment length of 2000. These aligned reads were converted to BAM files, and 
