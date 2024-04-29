@@ -1,8 +1,22 @@
-
+FILES = ['ATACrep3', 'ATACrep4']
+READS = ['R1','R2']
 
 rule all:
+	input:
+		expand('samples/{condition}_{rep}_subsample.fastq.gz', condition = FILES, rep = READS)
 
 
+rule make_subsets:
+	input:
+		fastq = 'samples/{condition}_{rep}.fastq.gz'
+	output:
+		subsample = 'samples/{condition}_{rep}_subsample.fastq.gz'
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		zcat {input.fastq} | head -n 8000 | gzip > {output.subsample}
+		'''
 
 rule bowtie2_build_gencode:
 	input:
@@ -101,6 +115,249 @@ rule samtools_flagstat:
 		'''
 
 # Remove any mitochondrial reads with 
-samtools	view input.bam |	egrep	-v	chrM	| samtools	view	-bT fasta_reference --o output.bam
+#samtools	view input.bam |	egrep	-v	chrM	| samtools	view	-bT fasta_reference --o output.bam
 
-# 
+rule remove_mito_reads:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+
+
+
+# Using deeptools, shift bam files using alignmentSieve to account for tagmentation
+
+rule shift_bam_files:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+# Perform QC on these shifted bam files using ATACseqQC
+
+rule ATACseqQC:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+#Using bedtools, convert the bam files to bed format
+
+#Convert BAM files to the HOMER format
+rule make_tag_dir:
+	input:
+		#BAM files
+		bam = 'results/shifted_{condition}_{rep}.bam'
+	output:
+		 dir = directory('results/{condition}_{rep}_tag/')
+	conda:
+		'envs/homer_env.yml'
+	shell:
+		'''
+		makeTagDirectory {output.dir} {input.bam}
+		'''
+
+rule findPeaks:
+	input:
+		tag_dir = 'results/RUNX1_{rep}_tag/',
+		control_dir = 'results/INP_{rep}_tag/'
+	output:
+		peaks = 'results/{rep}_peaks.txt'
+	conda:
+		'envs/homer_env.yml'
+	shell:
+		'''
+		findPeaks {input.tag_dir} -style factor -o {output.peaks} -i {input.control_dir}
+		'''
+
+rule convertPeakFiles:
+	input:
+		peak_file = 'results/{rep}_peaks.txt'
+	output:
+		bed_output = 'results/{rep}_peaks.bed'
+	conda:
+		'envs/homer_env.yml'
+	shell:
+		'''
+		pos2bed.pl {input.peak_file} > {output.bed_output} 
+		'''
+
+# Call peaks on bed files with default params using MACS
+
+rule MACS:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+# Find reproducible peaks with bedtools intersect, using peaks that have 50% in common
+
+rule intersect_peaks:
+	input:
+		peak1 = 'results/rep1_peaks.bed',
+		peak2 =  'results/rep2_peaks.bed'
+	output:
+		intersected = 'results/peaks_merged_new.bed'
+	conda:
+		'envs/bedtools_env.yml'
+	shell:
+		'''
+		bedtools intersect -a {input.peak1} -b {input.peak2} -wa > {output.intersected}
+		'''
+
+# Remove peaks in blacklisted areas with bedtools intersect
+
+rule filter_blacklist:
+	input:
+		intersected_peaks = 'results/peaks_merged_new.bed',
+		blacklist = 'results/hg38-blacklist.v2.bed'
+	output:
+		output = 'results/peaks_filtered_new.bed'
+	conda:
+		'envs/bedtools_env.yml'
+	shell:
+		'''
+		bedtools intersect -v -a {input.intersected_peaks} -b {input.blacklist} > {output.output}
+		'''
+
+# Annotate filtered peaks with Gencode v45 annotations
+
+rule annotate_peaks:
+	input:
+		peaks = 'results/peaks_filtered_new.bed',
+		gtf = 'results/gencode.v45.primary_assembly.annotation.gtf'
+	output:
+		annotation = 'results/peaks_repr_filtered_annotations_new.txt'
+	conda:
+		'envs/homer_env.yml'
+	shell:
+		'''
+		annotatePeaks.pl {input.peaks} hg38 -gtf {input.gtf} > {output.annotation}
+		'''
+
+# Find motifs with Homer's findMotifsGenome.pl with default parameters except for size of 200
+
+rule motifs:
+	input:
+		peak = 'results/peaks_repr_filtered_annotations_new.txt',
+		genome = 'results/GRCh38.primary_assembly.genome.fa'
+	output:
+		dir = 'results/motifs_new/'
+	conda:
+		'envs/homer_env.yml'
+	shell:
+		'''
+		findMotifsGenome.pl {input.peak} {input.genome} {output.dir} -size 200
+		'''
+
+# sample matrices with computeMatrix on deeptools
+
+rule computeMatrix:
+	input:
+		bed = 'results/hg38_genes.bed',
+		runx1 = 'results/bigwig_RUNX1_{rep}.bw'
+	output:
+		'results/computed_{rep}.gz'
+	params:
+	conda:
+		'envs/deeptools_env.yml'
+	threads: 4
+	shell:
+		'''
+		computeMatrix scale-regions -S {input.runx1} -R {input.bed} -b 2000 -a 2000 -o {output}
+		'''
+
+# plot matrices using plotProfile on deeptools
+
+rule plotMatrix:
+	input:
+		matrix = 'results/computed_{rep}.gz'
+	output:
+		'results/computed_{rep}.png'
+	conda:
+		'envs/deeptools_env.yml'
+	shell:
+		'''
+		plotProfile -m {input.matrix} -o {output}
+		'''
+
+
+# Create fragment length distribution plot using ArchR R package
+
+rule fragment_plot:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+
+# Make a table of alignments before vs after mitochondrial filtering
+
+rule alignment_table:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+# Make TSS alignment graph using plotPDF() from ArchR R package 
+
+rule TSS_alignment:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+# Make a table containing the number of peaks called in each replicate, and the number of reproducible peaks
+
+rule peak_table:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+# Do gene enrichment using FGSEA
+
+rule gene_enrichment:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
+
+# Produce a figure that displays the proportions of regions that appear to have accessible chromatin called as a peak (Promoter, Intergenic, Intron, Exon, TTS, etc.)
+
+rule chromatin_figure:
+	input:
+	output:
+	conda:
+		'envs/bowtie2_env.yml'
+	shell:
+		'''
+		'''
