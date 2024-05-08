@@ -21,45 +21,51 @@ Fragment length distribution plot was created for each sample using samtools vie
 
 
 ## Questions to Address
-Briefly remark on the quality of the sequencing reads and the alignment statistics, make sure to specifically mention the following:
+I didn't find too many concerning quality control aspects. From the multiQC we were able to deduce that the Nextera adapter needed to be removed, but after that it seemed that the reads were of good quality. The flagstat files showed that there was no problem with the quality control, and that the mitochondrial reads were removed. I think that its possible that something went wrong with signal coverage plots, since I don't think that the peaks were meant to align, but I couldn't find anything wrong with my code. It's possible that there was something wrong with the quality of the alignment. However, it seems that from the ATACseqQC analysis, the samples were of good quality, so I would not exclude any samples from further analysis.
 
-Are there any concerning aspects of the quality control of your sequencing reads?
-Are there any concerning aspects of the quality control related to alignment?
-Based on all of your quality control, will you exclude any samples from further analysis?
+For ATACrep3, there were 169,214,168 alignments with about 44,697,316 alignments against the mitochondrial chromosome.
+For ATACrep4, there were 49,268,808 alignments with about 12,058,171 alignments against the mitochrondial chromosome.
 
-After alignment, quickly calculate how many alignments were generated from each sample in total and how many alignments were against the mitochondrial chromosome
+There were 49152 peaks in the ATACrep3 sample, and 42398 peaks in the ATACrep4 sample. There were 282 reproducible peaks, which were found by looking at what peaks had a 50% overlap in both samples. After filtering out blacklisted regions, there 258 peaks left.
 
-Report the total number of alignments per sample
-Report the number of alignments against the mitochondrial genome
+The GSEA shows that most relevant pathways to what we are trying to infer is related to motor signaling, metabolism, and estrogen response. I have very little idea what these things have in common, but I would assume that these peaks all have something to do with hormones or are related to the brain in some way. The pie chart shows that most of the peaks where chromatin is accessible is in intron, intergenic, and promoter-TSS regions. This is very surprising to me, since I would have expected there to be more chromatin free regions in the exons compared to the introns, but I suppose thinking about many exons are regulated, and there are more introns then exons, so it makes sense.
 
-After performing peak calling analysis, generating a set of reproducible peaks and filtering peaks from blacklisted regions, please answer the following:
-
-How many peaks are present in each of the replicates?
-How many peaks are present in your set of reproducible peaks? What strategy did you use to determine “reproducible” peaks?
-How many peaks remain after filtering out peaks overlapping blacklisted regions?
-
-After performing motif analysis and gene enrichment on the peak annotations, please answer the following:
-
-Briefly discuss the main results of both of these analyses
-What can chromatin accessibility let us infer biologically?
+Chromatin accessibility can help us understand the epigenetic regulation of the genome, and what kind of envrionmental factors affect what kind of genetic regulation. Knowing what environmental factors affect, for example, cancer, can help us mitigate these and improve public health in general.
 
 
 ## Deliverables
 Produce a fragment length distribution plot for each of the samples
 
+![hist.png](hist.png)
+
 Produce a table of how many alignments for each sample before and after filtering alignments falling on the mitochondrial chromosome
 
-Create a signal coverage plot centered on the TSS (plotProfile) for the nucleosome-free regions (NFR) and the nucleosome-bound regions (NBR)
+![mito_table](results/table2.png)
 
+Create a signal coverage plot centered on the TSS (plotProfile) for the nucleosome-free regions (NFR) and the nucleosome-bound regions (NBR)
 You may consider fragments (<100bp) to be those from the NFR and the rest as the NBR.
+
+![0_100 plot](results/signal_coverage_ATACrep4_0_100.png)
+![180 plot](results/signal_coverage_ATACrep4_180_247.png)
+
 A table containing the number of peaks called in each replicate, and the number of reproducible peaks
+
+![peaks_table](results/table3.png)
 
 A single BED file containing the reproducible peaks you determined from the experiment.
 
+This is ATAC_intersect.bed in results folder
+
 Perform motif finding on your reproducible peaks
-
 Create a single table / figure with the most interesting results
+
+![peaks_table](results/ATAC_motifs/knownResults.html)
+
 Perform a gene enrichment analysis on the annotated peaks using a well-validated gene enrichment tool
-
 Create a single table / figure with the most interesting results
+
+![top_ten_results](results/top_ten_results.png)
+
 Produce a figure that displays the proportions of regions that appear to have accessible chromatin called as a peak (Promoter, Intergenic, Intron, Exon, TTS, etc.)
+
+![pie_chart](results/pie_chart.png)
