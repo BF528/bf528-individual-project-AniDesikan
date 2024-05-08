@@ -59,7 +59,7 @@ This is ATAC_intersect.bed in results folder
 Perform motif finding on your reproducible peaks
 Create a single table / figure with the most interesting results
 
-![peaks_table](ATAC_motifs/knownResults.html)
+![peaks_table](knownResults.html)
 
 Perform a gene enrichment analysis on the annotated peaks using a well-validated gene enrichment tool
 Create a single table / figure with the most interesting results
