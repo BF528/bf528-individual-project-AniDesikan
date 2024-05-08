@@ -40,17 +40,17 @@ Produce a fragment length distribution plot for each of the samples
 
 Produce a table of how many alignments for each sample before and after filtering alignments falling on the mitochondrial chromosome
 
-![mito_table](results/table2.png)
+![mito_table](table2.png)
 
 Create a signal coverage plot centered on the TSS (plotProfile) for the nucleosome-free regions (NFR) and the nucleosome-bound regions (NBR)
 You may consider fragments (<100bp) to be those from the NFR and the rest as the NBR.
 
-![0_100 plot](results/signal_coverage_ATACrep4_0_100.png)
-![180 plot](results/signal_coverage_ATACrep4_180_247.png)
+![0_100 plot](signal_coverage_ATACrep4_0_100.png)
+![180 plot](signal_coverage_ATACrep4_180_247.png)
 
 A table containing the number of peaks called in each replicate, and the number of reproducible peaks
 
-![peaks_table](results/table3.png)
+![peaks_table](table3.png)
 
 A single BED file containing the reproducible peaks you determined from the experiment.
 
@@ -59,13 +59,13 @@ This is ATAC_intersect.bed in results folder
 Perform motif finding on your reproducible peaks
 Create a single table / figure with the most interesting results
 
-![peaks_table](results/ATAC_motifs/knownResults.html)
+![peaks_table](ATAC_motifs/knownResults.html)
 
 Perform a gene enrichment analysis on the annotated peaks using a well-validated gene enrichment tool
 Create a single table / figure with the most interesting results
 
-![top_ten_results](results/top_ten_results.png)
+![top_ten_results](top_ten_results.png)
 
 Produce a figure that displays the proportions of regions that appear to have accessible chromatin called as a peak (Promoter, Intergenic, Intron, Exon, TTS, etc.)
 
-![pie_chart](results/pie_chart.png)
+![pie_chart](pie_chart.png)
